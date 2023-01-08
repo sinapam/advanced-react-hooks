@@ -28,32 +28,31 @@ function asyncFetchReducer(state, action) {
   }
 }
 
+function useAsync(asyncCallback, initialState, dependencies) {
+  const [state, dispatch] = React.useReducer(asyncFetchReducer, initialState)
+
+  React.useEffect(() => {
+    const promise = asyncCallback()
+    if (!promise) {
+      return
+    }
+    // then you can dispatch and handle the promise etc...
+    dispatch({type: 'pending'})
+    promise.then(
+      data => {
+        dispatch({type: 'resolved', data})
+      },
+      error => {
+        dispatch({type: 'rejected', error})
+      },
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, dependencies)
+
+  return state
+}
+
 function PokemonInfo({pokemonName}) {
-  function useAsync(asyncCallback, initialState, dependencies) {
-    const [state, dispatch] = React.useReducer(asyncFetchReducer, initialState)
-
-    React.useEffect(() => {
-      const promise = asyncCallback()
-      if (!promise) {
-        return
-      }
-      // then you can dispatch and handle the promise etc...
-      dispatch({type: 'pending'})
-      promise.then(
-        data => {
-          dispatch({type: 'resolved', data})
-        },
-        error => {
-          dispatch({type: 'rejected', error})
-        },
-      )
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, dependencies)
-
-    return state
-  }
-
-  // 🐨 here's how you'll use the new useAsync hook you're writing:
   const state = useAsync(
     () => {
       if (!pokemonName) {
